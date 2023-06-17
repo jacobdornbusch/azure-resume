@@ -1,57 +1,56 @@
 name: deploy_backend
 
-# Deploy when push made from backend folder.
+# Deploy when push is made from the backend folder.
 on:
   push:
-        branches: [ main ]
-        paths:
-        - 'backend/**'
-          
+    branches: [main]
+    paths:
+      - 'backend/**'
 
 # CONFIGURATION
 # For help, go to https://github.com/Azure/Actions
 #
-# 1. Paste the RBAC json into the following secret in your repository:
-#   AZURE_RBAC_CREDENTIALS
+# 1. Paste the RBAC JSON into the following secret in your repository:
+#    AZURE_RBAC_CREDENTIALS
 #
 # 2. Change these variables for your configuration:
 env:
-  AZURE_FUNCTIONAPP_NAME: GetResumeCounterJD # set this to your application's name
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend'    # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '6.0'              # set this to the dotnet version to use
+  AZURE_FUNCTIONAPP_NAME: GetResumeCounterJD  # Set this to your application's name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend'   # Set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '6.0'                       # Set this to the .NET version to use
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
     steps:
-    - name: 'Checkout GitHub Action'
-      uses: actions/checkout@master
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v2
 
-    - name: 'Login via Azure CLI'
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 'Run dotnet'
-      shell: pwsh
-      run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api'
-        dotnet build --configuration Release --output ./output
-        popd
-    - name: 'Run unit test'
-      shell: pwsh
-      run: | 
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/tests'
-        dotnet test
-      
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api/output'
+      - name: 'Restore dependencies'
+        run: dotnet restore './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api'
+
+      - name: 'Build'
+        run: dotnet build './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api' --configuration Release
+
+      - name: 'Run unit tests'
+        run: dotnet test './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/tests'
+
+      - name: 'Publish'
+        run: dotnet publish './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api' --configuration Release --output './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api/output'
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/api/output'
