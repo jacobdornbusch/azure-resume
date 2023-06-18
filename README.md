@@ -1,6 +1,6 @@
 # Azure Resume Website
 This is my solution to the Azure Resume Challenge.<br/>
-You can view the live version [here](https://azureresumejd.azureedge.net).
+You can view the live version [here](https://www.jacobdornbusch.com).
 
 ## Architecture Diagram
 ![Diagram](https://i.imgur.com/BbestzP.png)
