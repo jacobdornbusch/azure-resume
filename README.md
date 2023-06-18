@@ -1,6 +1,6 @@
 # Azure Resume 
 This is my solution to the Azure Resume Challenge.<br/>
-You can view the live version [here](azureresumejd.azureedge.net).
+You can view the live version [here](https://azureresumejd.azureedge.net).
 ![Diagram](https://i.imgur.com/BbestzP.png)
 ## Project Overview
 
